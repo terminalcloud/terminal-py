@@ -1,7 +1,15 @@
-from distutils.core import setup
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+from ez_setup import use_setuptools
+use_setuptools()
+
+from setuptools import setup
+
+
 setup(
   name = 'terminal',
-  packages = ['terminal'],
+  py_modules = ["terminal", "ez_setup"],
   version = '0.1',
   description = 'Terminal.com API wrapper for python',
   author = 'Enrique Conci',
