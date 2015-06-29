@@ -1,2 +1,2 @@
-# terminal-py
-Terminal.com Python API Bindings
+# Terminal.py
+Terminal.com Python API bindings
