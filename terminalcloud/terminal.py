@@ -4,7 +4,7 @@ import urllib
 import urllib2
 
 # Authentication
-def setup_credentials(utoken, atoken, credsfile):
+def setup_credentials(utoken, atoken, credsfile, apiurl='https://api.terminal.com/v0.2'):
     if utoken is None and atoken is None:
         try:
             creds = json.load(open(credsfile, 'r'))
@@ -22,7 +22,8 @@ def setup_credentials(utoken, atoken, credsfile):
             json.dump({'user_token': utoken, 'access_token': atoken}, cfile)
     global user_token
     global access_token
-    user_token, access_token = str(utoken), str(atoken)
+    global api_url
+    user_token, access_token, api_url = str(utoken), str(atoken), str(apiurl)
     return user_token, access_token
 
 
@@ -30,7 +31,7 @@ def setup_credentials(utoken, atoken, credsfile):
 def make_request(call, params=None, url=None, headers=None, raw=False):
     try:
         if url is None:
-            url = 'https://api.terminal.com/v0.2/%s' % call
+            url = '%s/%s' % (api_url, call)
         if headers is None:
             headers = {'user-token': user_token, 'access-token': access_token, 'Content-Type': 'application/json'}
         if params is None:
