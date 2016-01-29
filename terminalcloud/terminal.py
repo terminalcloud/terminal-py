@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 import json
-import urllib
-import urllib2
+import requests
 
 # Authentication
 def setup_credentials(utoken, atoken, credsfile, apiurl='https://api.terminal.com/v0.2'):
@@ -10,12 +9,11 @@ def setup_credentials(utoken, atoken, credsfile, apiurl='https://api.terminal.co
             creds = json.load(open(credsfile, 'r'))
             utoken = creds['user_token']
             atoken = creds['access_token']
-        except Exception, e:
-            print "Can't open credentials file. (%s)\n ", \
-                "You must provide a user token and a access token at least one time, or a valid credentials file" % e
+        except Exception as e:
+            print("Can't open credentials file. (%s)\nYou must provide a user token and a access token at least one time, or a valid credentials file" % e)
             exit(127)
     elif (utoken is not None and atoken is None) or (utoken is None and atoken is not None):
-        print "--utoken AND --atoken parameters must be passed together"
+        print("--utoken AND --atoken parameters must be passed together")
         exit(1)
     else:
         with open(credsfile, 'w') as cfile:
@@ -28,32 +26,31 @@ def setup_credentials(utoken, atoken, credsfile, apiurl='https://api.terminal.co
 
 
 # Manage Request
-def make_request(call, params=None, url=None, headers=None, raw=False):
+def make_request(call, params=None, url=None, headers=None):
     try:
         if url is None:
             url = '%s/%s' % (api_url, call)
         if headers is None:
             headers = {'user-token': user_token, 'access-token': access_token, 'Content-Type': 'application/json'}
         if params is None:
-            data = json.dumps({})
+            data = {}
         else:
             parsed_params = {}
             for key in params.keys():
                 if params[key] is not None:
                     parsed_params.update({key: params[key]})
-            if raw:
-                data = urllib.urlencode(parsed_params)
-                headers.pop('Content-Type')
-            else:
-                data = json.dumps(parsed_params)
-        req = urllib2.Request(url, data, headers)
-        response = urllib2.urlopen(req)
-        results = json.loads(response.read())
+            data = parsed_params
+
+        if data != '{}':
+            headers.update(data)
+            results = json.loads(requests.post(url, headers).text)
+        else:
+            results = json.loads(requests.post(url, headers).text)
         results.update({u'success': True})
         map(str, results)
         return results
-    except urllib2.HTTPError as e:
-        return json.loads(e.read())
+    except requests.HTTPError as e:
+        return json.loads(e.response)
 
 
 # Browse Snapshots and Users
@@ -342,7 +339,7 @@ def add_authorized_key_to_ssh_proxy(name, publicKey):
     params = {'name': name, 'publicKey': publicKey}
     try:
         response = make_request(call, params)
-    except Exception, e:
+    except Exception as e:
         return {'status': e}
     return response
 
